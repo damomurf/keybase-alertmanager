@@ -9,12 +9,33 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"text/template"
 
 	"github.com/keybase/go-keybase-chat-bot/kbchat"
 	"github.com/prometheus/alertmanager/notify/webhook"
 )
+
+// DefaultFuncs is the default list additional Go Template functions supported.
+var DefaultFuncs = template.FuncMap{
+	"toUpper": strings.ToUpper,
+	"toLower": strings.ToLower,
+	"title":   strings.Title,
+	// join is equal to strings.Join but inverts the argument order
+	// for easier pipelining in templates.
+	"join": func(sep string, s []string) string {
+		return strings.Join(s, sep)
+	},
+	"match": regexp.MatchString,
+	"reReplaceAll": func(pattern, repl, text string) string {
+		re := regexp.MustCompile(pattern)
+		return re.ReplaceAllString(text, repl)
+	},
+	"stringSlice": func(s ...string) []string {
+		return s
+	},
+}
 
 func handleWebhook(kbc *kbchat.API, user string, tmpl *template.Template) func(w http.ResponseWriter, r *http.Request) {
 
@@ -59,16 +80,12 @@ func main() {
 	flag.StringVar(&user, "user", "", "Keybase user to send message to")
 	flag.Parse()
 
-	log.Printf("%+v", os.Environ())
-
-	tmpl, err := template.New("default.tmpl").Funcs(template.FuncMap{
-		"toUpper": strings.ToUpper,
-		"join":    strings.Join,
-	}).ParseFiles("default.tmpl")
+	tmpl, err := template.New("default.tmpl").Funcs(DefaultFuncs).ParseFiles("default.tmpl")
 
 	if err != nil {
 		log.Panicf("Unable to parse template: %+v", err)
 	}
+	log.Printf("Templates parsed successfully.")
 
 	if kbc, err = kbchat.Start(kbchat.RunOptions{
 		KeybaseLocation:    kbLoc,
@@ -81,6 +98,7 @@ func main() {
 	}); err != nil {
 		log.Fatalf("Error creating API: %+v", err)
 	}
+	log.Printf("Keybase API setup complete.")
 
 	http.HandleFunc("/webhook", handleWebhook(kbc, user, tmpl))
 
