@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: gcr.io/murf-org-d/keybase-alertmanager
-  tag: v0.0.5
+  tag: v0.0.16
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []

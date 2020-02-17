@@ -15,14 +15,24 @@ receivers:
     - url: http://keybase-alertmanager.default:3000/webhook
       send_resolved: true
 route:
+  receiver: keybase
   group_by:
   - job
-  group_interval: 5m
-  group_wait: 30s
-  receiver: keybase
-  repeat_interval: 12h
   routes:
-  - match:
+  - receiver: watchdog
+    match:
       alertname: Watchdog
-    receiver: noop-receiver
-```
+    group_wait: 15s
+    group_interval: 30s
+    repeat_interval: 1m
+  repeat_interval: 1h
+receivers:
+- name: noop-receiver
+- name: keybase
+  webhook_configs:
+  - send_resolved: true
+    url: http://keybase-alertmanager.default:3000/webhook
+- name: watchdog
+  webhook_configs:
+  - url: http://keybase-alertmanager.default:3000/watchdog
+  ```
