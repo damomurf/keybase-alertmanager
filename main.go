@@ -151,6 +151,7 @@ func main() {
 	var interval time.Duration
 	var expiry time.Duration
 	var user string
+	var templatePath string
 	var err error
 
 	flag.StringVar(&kbLoc, "keybase", "keybase", "the location of the Keybase app")
@@ -158,9 +159,10 @@ func main() {
 	flag.StringVar(&user, "user", "", "Keybase user to send message to")
 	flag.DurationVar(&interval, "interval", 10*time.Second, "The interval at which to check for watchdog expiry")
 	flag.DurationVar(&expiry, "expiry", 2*time.Minute, "The amount of time after which a non-pinging watchdog check will be considered to have expired")
+	flag.StringVar(&templatePath, "template", "default.tmpl", "Go text template definition file")
 	flag.Parse()
 
-	tmpl, err := template.New("default.tmpl").Funcs(DefaultFuncs).ParseFiles("default.tmpl")
+	tmpl, err := template.New("default.tmpl").Funcs(DefaultFuncs).ParseFiles(templatePath)
 
 	if err != nil {
 		log.Panicf("Unable to parse template: %+v", err)
