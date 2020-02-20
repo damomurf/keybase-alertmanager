@@ -42,12 +42,6 @@ A custom template file can be used by specifying the `-template <file path>` com
 ```yaml
 global:
   resolve_timeout: 5m
-receivers:
-- name: noop-receiver
-- name: keybase
-  webhook_configs:
-    - url: http://keybase-alertmanager.default:3000/webhook
-      send_resolved: true
 route:
   receiver: keybase
   group_by:
